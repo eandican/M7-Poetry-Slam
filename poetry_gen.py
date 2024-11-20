@@ -1,66 +1,138 @@
 import textstat
+from glob import glob
+import json
+import spacy
+import numpy
 
 
-'''
-A limerick is a five-line poem with a strict rhyme scheme and rhythm: 
-The first, second, and fifth lines rhyme with each other. 
-The third and fourth lines rhyme with each other. 
-The first, second, and fifth lines have three anapests, while the third and fourth lines have two anapests. 
-    An anapest is a rhythm where two unstressed syllables are followed by a stressed syllable
-'''
+class Poem:
+    def __init__(self, title, text):
+        self.title = title
+        self.text = text
 
 
 class InspiringSet:
     def __init__(self):
         self.inspiring_poems = []
+        self.nlp = spacy.load("en_core_web_sm")
+
 
     def generate_inspiring_poems(self, authors_poems):
-        for poem in authors_poems:
+        '''
+        Function that helps find and extract the poems by the specified author
+        '''
+        author_folder = glob(f"{authors_poems}/*.json") # helps located folder in this repo
 
+        for poem in author_folder:
+            with open(poem, 'r', encoding='utf-8') as f:
+                file_contents = json.load(f)
+                title = file_contents.get('title')
+                text = file_contents.get('text')
+                extracted_poem = Poem(title, text)
+                self.inspiring_poems.append(extracted_poem) # add poem to inspo set
     
-    def generate_words(self):
-        'find all words'
+    
+    def generate_nouns(self):
+        '''
+        Identifies nouns within the poems of the author
+        '''
+        nouns = []
+        for poem in self.inspiring_poems:
+            for line in poem.text:
+                doc = self.nlp(line)
+                line_nouns = ([token.text for token in doc if token.pos_ == "NOUN"]) # finds nouns in lines
+                if line_nouns:
+                    nouns.append(line_nouns)
+        return nouns
 
     def generate_adjectives(self):
-        'find all adjectives'
+        '''
+        Identifies adjectives within the poems of the author
+        '''
+        adjectives = []
+        for poem in self.inspiring_poems:
+            for line in poem.text:
+                doc = self.nlp(line)
+                line_adjectives = ([token.text for token in doc if token.pos_ == "ADJ"]) # finds adjecticves in lines
+                if line_adjectives:
+                    adjectives.append(line_adjectives)
+        return adjectives
 
-    def generate_verbs(self:)
-        'find all verbs'
+    def generate_verbs(self):
+        '''
+        Identifies verbs within the poems of the author
+        '''
+        verbs = []
+        for poem in self.inspiring_poems:
+            for line in poem.text:
+                doc = self.nlp(line)
+                line_verbs = ([token.text for token in doc if token.pos_ == "VERB"])  # finds verbs in lines
+                if line_verbs:
+                    verbs.append(line_verbs)
+        return verbs
+
+    def generate_prepositions(self):
+        '''
+        Identifies prepositions within the poems of the author
+        '''
+        prepositions = []
+        for poem in self.inspiring_poems:
+            for line in poem.text:
+                doc = self.nlp(line)
+                line_prepositions = ([token.text for token in doc if token.pos_ == "ADP"])  # finds prepositions in lines
+                if line_prepositions:
+                    prepositions.append(line_verbs)
+        return prepositions
 
 
-class Poem:
-    def __init__(self, name, lines, flesch_score):
-        name = ""
-        lines = []
-        flesch_score = 0
+    def generate_limerick(self):
+        '''
+        Uses inspiring set to generate the limerick, which uses a AABBA Rhyme scheme.
+        '''
+        nouns = self.generate_nouns()
+        adjectives = self.generate_adjectives()
+        verbs = self.generate_verbs()
+        prepositions = self.generate_prepositions()
 
-    def generate_poem(self, inspring_set):
-        'empty line array'
-        'from list of inspiring poems'
-            'Start with noun'
-                'add noun to empty sentence'
-                    'use spacey 
-                    'create lines based on constraints of limerick then add'
-                    'make sure of rhyme types'
-        'name = first line'
-        'create Poem'
+        first_noun = 
+        second_noun = 
+        third_noun = 
 
-    def evaluate_poem(self, poem):
-        'correct poem grammar using gingerit'
-        'score poem textstat.flesch_reading_ease(sentence) or Flesch Reading Ease Score = 206.835 − 1.015 × ( Total Words / Total Sentences ) − 84.6 × ( Total Syllables / Total Words )'
-        'add to poem'
+        first_prep =
+        second_prep =
+        third_prep = 
+        fourth_prep =
+        fifth_prep = 
 
-class Teacher:
-    'tts thing'
+        first_verb = 
+        second_verb =
+        third_verb = 
+        fourth_verb = 
+
+        first_adj = 
+        second_adj = 
+        third_adj = 
+        fourth_adj = 
+
+        rhymeA = pronouncing.rhymes(second_noun)[0]
+        rhymeB = pronouncing.rhymes(third_noun)[0]
+        rhymeAA = pronouncing.rhymes(second_noun)[0]
+
+        starting_line = f"There once was a {first_noun} {first_prep} {second_noun}"
+        second_line = f"Who {first_adj} {first_verb} {second_prep} {rhymeA}."
+        third_line = f"The {second_noun} {second_adj} {second_verb} {third_prep} {third_noun}"
+        fourth_line = f"And {third_adj} {third_verb} {fourth_prep} {rhymeB}."
+        firth_line = f"{first_noun} {fourth_verb} {fourth_adj} {fifth_prep} {rhymeAA}"
+
+        poem_lines = [starting_line, second_line, third_line, fourth_line, firth_line]
+        poem_title = starting_line
+
+        return Poem(poem_title, poem_lines)
 
 def main():
-    'empty array for poems'
-    'for loop'
-        'create poem'
-            'generate'
-            'eval'
-    'maybe use pandas to create clusters, choose one closest to 5'
-        'have tts read it out'
+    inspiring_set = InspiringSet()
+    author_folder = "collection/collection/A. E. Housman" # need to appened collection/collection from input
 
-
+if __name__ == "__main__":
+    main()
     
