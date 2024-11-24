@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <link
+      href="https://fonts.googleapis.com/css?family=MedievalSharp"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        font-family: "MedievalSharp";
+        font-size: 22px;
+      }
+    </style>
+    <title>InsPoet</title>
+  </head>
+  <body>
+    <h1>Limerick Generator</h1>
+    <label for="author">Enter an Author (can be blank for random):</label>
+    <input type="text" id="author" placeholder="Enter author name" />
+
+    <h2>Generated Limerick</h2>
+    <div id="poem-word-by-word"></div>
+    <button id="start-word-by-word">Start Generating!</button>
+
+    <h2>Saved Limericks</h2>
+    <button id="view-saved-limericks">View Saved Poems</button>
+    <div id="saved-limericks"></div>
+
+    <script>
+      document.getElementById("start-word-by-word").onclick =
+        async function () {
+          const author =
+            document.getElementById("author").value || "default_author";
+
+          try {
+            const response = await fetch("/generate_limerick", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ author }),
+            });
+
+            if (!response.ok) {
+              throw new Error("Failed to fetch poem. Please try again.");
+            }
+
+            const data = await response.json();
+            const lines = data.lines || [];
+            const displayElement = document.getElementById("poem-word-by-word");
+            displayElement.innerHTML = "";
+
+            const grammarScoreElement = document.createElement("p");
+            grammarScoreElement.textContent = `Grammar Errors: ${data.grammar_score}`;
+            displayElement.appendChild(grammarScoreElement);
+
+            const sentimentScoreElement = document.createElement("p");
+            sentimentScoreElement.textContent = `Sentiment Score: ${data.sentiment_score.toFixed(
+              2
+            )}`;
+            displayElement.appendChild(sentimentScoreElement);
+
+            const inspiredAuthor = data.author;
+            const authorElement = document.createElement("h3");
+            authorElement.textContent = `Author: ${inspiredAuthor}`;
+            displayElement.appendChild(authorElement);
+
+            let index = 0;
+
+            function displayNext() {
+              if (index < lines.length) {
+                const line = lines[index++];
+
+                const lineElement = document.createElement("p");
+                lineElement.textContent = line.trim();
+                displayElement.appendChild(lineElement);
+
+                const utterance = new SpeechSynthesisUtterance(line);
+                window.speechSynthesis.speak(utterance);
+
+                setTimeout(displayNext, 1500);
+              }
+            }
+
+            displayNext();
+          } catch (error) {
+            console.error("Error:", error);
+            alert("Failed to generate poem. Please try again.");
+          }
+        };
+
+      document.getElementById("view-saved-limericks").onclick =
+        async function () {
+          const response = await fetch("/show_saved");
+          const limericks = await response.json();
+          const displayElement = document.getElementById("saved-limericks");
+          displayElement.innerHTML = "";
+
+          if (limericks.length === 0) {
+            displayElement.innerHTML = "<p>No saved limericks found.</p>";
+            return;
+          }
+
+          limericks.forEach((poem) => {
+            const poemElement = document.createElement("div");
+            poemElement.classList.add("poem-container");
+            poemElement.innerHTML = `
+                <h3>${poem.title}</h3>
+                <p><strong>Author:</strong> ${poem.author}</p>
+                <p>${poem.lines.join("<br />")}</p>
+                <p><strong>Grammar Errors:</strong> ${poem.grammar_score}</p>
+                <p><strong>Sentiment Score:</strong> ${poem.sentiment_score.toFixed(
+                  2
+                )}</p>
+              `;
+            displayElement.appendChild(poemElement);
+          });
+        };
+    </script>
+  </body>
+</html>
